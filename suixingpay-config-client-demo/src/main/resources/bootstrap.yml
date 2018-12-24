@@ -6,7 +6,7 @@ spring:
     active: ${profile:dev}
 
 server:
-  port: 8088
+  port: 8089
   #servlet:
   #  context-path: /test
 

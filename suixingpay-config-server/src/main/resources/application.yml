@@ -15,7 +15,7 @@ spring:
     active: ${profile:dev}
 
 server:
-  port: ${port:8080}
+  port: ${port:8088}
 
 management:
   server:

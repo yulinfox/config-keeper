@@ -17,7 +17,7 @@ dependencies {
         exclude group: "io.lettuce", module: "lettuce-core"
     }
 
-    compile 'mysql:mysql-connector-java'
+    compile 'mysql:mysql-connector-java:5.1.46'
     compile 'org.aspectj:aspectjweaver'
     compile 'ch.qos.logback:logback-classic'
     compile "redis.clients:jedis"
