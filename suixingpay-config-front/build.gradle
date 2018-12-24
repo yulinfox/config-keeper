@@ -27,3 +27,5 @@ task copyFrontFiles(type: Copy, dependsOn: buildFront) {
     into "../suixingpay-config-server/build/resources/main/static"
 }
 jar.dependsOn(copyFrontFiles)
+
+uploadArchives.enabled=false

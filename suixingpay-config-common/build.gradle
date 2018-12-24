@@ -1,3 +1,65 @@
+buildscript {
+    ext {
+        springBootVersion = '2.0.1.RELEASE'
+        springCloudVersion = 'Finchley.SR2'
+//        sxGradleHome = "https://github.com/sxfad/gradle-scripts/raw/master/"
+        REPOSITORY_HOME = 'http://maven.aliyun.com' // maven需要改为公司内部的仓库
+        REPOSITORY_URL =  REPOSITORY_HOME + "/nexus/content/groups/public"
+        swaggerVersion = "2.8.0"
+    }
+//    apply from: sxGradleHome + 'spring-cloud-edgware.gradle'
+    repositories {
+//        maven { url REPOSITORY_URL }
+        mavenLocal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+version = '2.0.0'
+group = 'com.suixingpay.config-keeper'
+description = '配置中心'
+
+apply plugin: 'maven'
+
+//apply plugin: 'maven-publish'
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: 'file://C:/Users/Toroto/.m2/repository')
+            //构造项目的Pom文件
+            pom.project {
+                name = project.name
+                packaging = 'jar'
+                description = 'description'
+            }
+        }
+    }
+}
+
+//publishing {
+//    publications {
+//        mavenJava(MavenPublication) {
+//            groupId 'com.suixingpay.config-keeper'
+//            artifactId 'suixingpay-config-client'
+//            version '2.0.0-SNAPSHOT'
+//
+//            from components.java
+//            // more goes in here
+//        }
+//    }
+//
+//    repositories {
+//        mavenLocal()
+//    }
+//}
+
+bootJar.enabled=false
+jar.enabled=true
+
 dependencies {
     compile 'com.fasterxml.jackson.core:jackson-databind'
     compile("io.springfox:springfox-swagger2:$swaggerVersion")
