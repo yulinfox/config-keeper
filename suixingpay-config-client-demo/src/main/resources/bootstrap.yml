@@ -13,16 +13,17 @@ server:
 suixingpay:
   config:
     cache-path: ${APP_HMOE:.}/config/
-#management:
-#  endpoints:
-#    web:
-#      base-path: /aa
-#      exposure:
-#        include: '*'
-#
+
+management:
+  endpoints:
+    web:
+      base-path: /mbase
+      exposure:
+        include: '*'
+
 #  server:
-#    #port: 9090
-#    servlet:
-#      context-path: /mbase
+#    port: 9090
+##    servlet:
+##      context-path: /mbase
 
 
