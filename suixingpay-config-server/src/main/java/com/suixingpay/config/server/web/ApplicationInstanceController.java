@@ -16,11 +16,20 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.http.client.support.BasicAuthorizationInterceptor;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.client.support.BasicAuthenticationInterceptor;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -35,7 +44,6 @@ import java.util.List;
  * @review: tangqihua[tang_qh@suixingpay.com]/2018年09月11日 15时35分
  */
 @Slf4j
-@Validated
 @Api(description = "应用实例信息")
 @RestController
 @RequestMapping("/applicationinstance")
@@ -52,7 +60,7 @@ public class ApplicationInstanceController {
 
     private static final int UNKNOWN_VERSION = -1;
 
-    private static final int READ_TIMEOUT = 1000;
+    private static final int READ_TIMEOUT = 1000 * 30;
 
     @PostMapping
     @ApiOperation(value = "修改实例refresh用户名和密码", notes = "修改实例refresh用户名和密码")
@@ -88,21 +96,26 @@ public class ApplicationInstanceController {
             ApplicationInstanceDO instanceDO = instanceService.findById(id);
             String url = buildUrl(instanceDO);
             url += "/refresh";
-            RestTemplate restTemplate = genRestTemplate(instanceDO.getUsername(), instanceDO.getPassword());
-            String res = restTemplate.postForObject(url, null, String.class);
             if (log.isDebugEnabled()) {
-                log.debug(res);
+                log.debug("url:" + url);
+            }
+            RestTemplate restTemplate = genRestTemplate(instanceDO.getUsername(), instanceDO.getPassword());
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity entity = new HttpEntity(null, headers);
+            ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, entity, String.class);
+            if (log.isDebugEnabled()) {
+                log.debug(responseEntity.getBody());
             }
             return getNewVersion(instanceDO);
         } catch (ResourceAccessException e) {
             throw new ConfigException("刷新异常: 项目刷新端点不通");
         } catch (HttpClientErrorException e) {
-            if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode())) {
+            if (HttpStatus.UNAUTHORIZED == e.getStatusCode()) {
                 throw new ConfigException("刷新异常: 用户名或密码错误");
             } else {
-                throw new ConfigException("刷新异常: {}", e.getStatusCode().toString());
+                throw new ConfigException("刷新异常: {}", e.getResponseBodyAsString());
             }
-
         } catch (Exception e) {
             log.warn(e.getMessage());
             throw new ConfigException("刷新异常:" + e.getMessage());
@@ -122,10 +135,10 @@ public class ApplicationInstanceController {
             RestTemplate restTemplate = genRestTemplate(instanceDO.getUsername(), instanceDO.getPassword());
             localVersion = restTemplate.getForObject(url, VersionDTO.class);
         } catch (HttpClientErrorException e) {
-            if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode())) {
+            if (HttpStatus.UNAUTHORIZED == e.getStatusCode()) {
                 throw new ConfigException("获取版本异常: 用户名或密码错误");
             } else {
-                throw new ConfigException("获取版本异常: {}", e.getStatusCode().toString());
+                throw new ConfigException("获取版本异常: {}", e.getResponseBodyAsString());
             }
         } catch (Exception e) {
             log.warn(e.getMessage());
@@ -160,7 +173,7 @@ public class ApplicationInstanceController {
     private RestTemplate genRestTemplate(String username, String password) {
         RestTemplate restTemplate = getRawRestTemplate();
         if (null != username && !username.trim().isEmpty()) {
-            restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(username, password));
+            restTemplate.getInterceptors().add(new BasicAuthenticationInterceptor(username, password));
         }
         return restTemplate;
 
@@ -169,7 +182,7 @@ public class ApplicationInstanceController {
     private RestTemplate getRawRestTemplate() {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setReadTimeout(READ_TIMEOUT);
-        requestFactory.setConnectTimeout(1000);
+        requestFactory.setConnectTimeout(5000);
         return new RestTemplate(requestFactory);
     }
 

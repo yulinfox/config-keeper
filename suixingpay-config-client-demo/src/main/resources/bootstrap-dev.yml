@@ -9,6 +9,6 @@ suixingpay:
     cacheTimeOut: 5
     failFast: false                # 是否快速失败，如果为true时，当访问配置中心时立即抛异常；如果为false时，会尝试加载3次，并会尝试获取本地缓存，最终还没有配置，才会抛异常。默认值：false
     # 应用实例IP
-    ipAddress: 127.0.0.1
-    managementPort: 8089
-    managementContextPath: /mbase
+#    ipAddress: 127.0.0.1
+#    managementPort: 8089
+#    managementContextPath: /mbase
